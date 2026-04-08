@@ -118,7 +118,7 @@ async def start(message: types.Message):
 async def info(message: types.Message):
     await answer_photo_safe(
         message,
-        photo=get_image_url(1),caption=( "🔐 **Основы информационной безопасности АС**\n\n"
+        photo=get_image_url(1),caption=( "🔐 Основы информационной безопасности АС\n\n"
             "Ты научишься:\n"
             "• Защищать сайты и базы данных\n"
             "• Шифровать информацию\n"
@@ -135,7 +135,7 @@ async def job(message: types.Message):
     await answer_photo_safe(
         message,
         photo=get_image_url(2),
-        caption=( "💼 **Где работать:**\n\n"
+        caption=( "💼 Где работать:\n\n"
         "• Специалист по ИБ\n"
         "• Системный администратор\n"
         "• Аналитик безопасности\n"
@@ -150,7 +150,7 @@ async def job(message: types.Message):
 @dp.message(lambda message: message.text == "📚 Специальности колледжа")
 async def all_specialties(message: types.Message):
     await message.answer( "📚 Специальности нашего колледжа:\n\n"
-        "🔐 Основы информационной безопасности АС\n"
+        "🔐 Техник по защите информации\n"
         "🧑‍💻 Специалист по компьютерным системам\n"
         "🧑‍🏭 Монтаж и техническое обслуживание\n"
         "📒 Бухгалтер\n"
