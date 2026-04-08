@@ -116,7 +116,10 @@ def get_image_id_from_url(url: str) -> int:
     for image_id, image_url in image_urls.items():
         if image_url == url:
             return image_id
-    return 1async def answer_photo_safe(message: types.Message, photo: str, caption: str, reply_markup):
+    return 1
+
+
+async def answer_photo_safe(message: types.Message, photo: str, caption: str, reply_markup):
     try:
         await message.answer_photo(
             photo=photo,
@@ -189,11 +192,11 @@ async def job(message: types.Message):
 @dp.message(lambda message: message.text == "📚 Специальности колледжа")
 async def all_specialties(message: types.Message):
     text = (
-        "📚 **Специальности нашего колледжа:**\n\n"
+        "📚 Специальности нашего колледжа:\n\n"
         "🔐 Основы информационной безопасности АС\n"
         "💻 Программирование\n"
         "🎨 Веб-дизайн\n"
-        "🗄 Администрирование баз данных\n"
+        "🗄️ Администрирование баз данных\n"
         "🖧 Системный администратор\n\n"
         "📍 Ждём тебя на дне открытых дверей!"
     )
@@ -232,7 +235,9 @@ async def process_test_answer(message: types.Message):
     if selected in {"⏪ Главное меню", "В главное меню"}:
         user_states[user_id] = {"stage": "idle"}
         await message.answer("Ты вернулся в главное меню.", reply_markup=menu)
-        returnindex = state["question_index"]
+        return
+
+    index = state["question_index"]
     if index >= len(questions):
         return
     question_text, options = questions[index]
