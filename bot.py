@@ -39,7 +39,7 @@ menu_with_result = ReplyKeyboardMarkup(
 questions = [
     ("Ты нашел флешку в коридоре колледжа. Твои действия?", [
         "Вставлю в свой комп — вдруг там что-то интересное",
-        "Отнесу преподавателю/потеряшку",
+        "Отнесу преподавателю потеряшку",
         "Выброшу, мало ли вирусы"
     ]),
     ("Придумай пароль для почты. Что выберешь?", [
@@ -96,7 +96,8 @@ image_urls = {
 
 image_section_map = {
     "specialty": 1,
-    "job": 2
+    "job": 2,
+    "test": 3
 }
 
 
@@ -192,11 +193,15 @@ async def all_specialties(message: types.Message):
     text = (
         "📚 Специальности нашего колледжа:\n\n"
         "🔐 Основы информационной безопасности АС\n"
-        "💻 Программирование\n"
-        "🎨 Веб-дизайн\n"
-        "🗄️ Администрирование баз данных\n"
-        "🖧 Системный администратор\n\n"
-        "📍 Ждём тебя на дне открытых дверей!"
+        "🧑‍💻 Специалист по компьютерным системам\n"
+        "🧑‍🏭 Монтаж и техническое обслуживание\n"
+        "📒 Бухгалтер\n"
+        "🏦 Банковское дело\n"
+        "🎨 Веб-разработка\n"
+        "🎮 Разработчик компьютерных игр\n"
+        "🤖 Специалист по работе с ИИ\n"
+        "🚒 Пожарная безопасность\n\n"
+        "✨ Ждём тебя на дне открытых дверей!"
     )
     await message.answer(text, reply_markup=menu)
 
@@ -242,13 +247,6 @@ async def process_test_answer(message: types.Message):
     if selected not in options:
         await message.answer("Пожалуйста, выбери вариант из клавиатуры.")
         return
-
-    correct_text, points = correct_answers[index]
-    if selected == correct_text:
-        user_scores[user_id] = user_scores.get(user_id, 0) + points
-        feedback = "✅ Правильно!"
-    else:
-        feedback = f"❌ Неправильно. Правильный ответ: {correct_text}"
 
     user_results[user_id].append(selected)
     await message.answer(feedback)
