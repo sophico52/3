@@ -182,6 +182,7 @@ async def start_certificate(message: types.Message):
     if not user_test_completed.get(user_id, False):
         await message.answer("❌ Сертификат только после теста! Нажми «Пройти тест»", reply_markup=menu)
         return
+    
     user_cert_data[user_id] = {}
     user_states[user_id] = {"stage": "cert_name"}
     await message.answer("🎓 Введите ваше ИМЯ:", reply_markup=types.ReplyKeyboardRemove())
@@ -198,6 +199,88 @@ async def get_cert_surname(message: types.Message):
     user_id = message.from_user.id
     user_cert_data[user_id]["surname"] = message.text.strip()
     name = user_cert_data[user_id]["name"]
+    surname = user_cert_data[user_id]["surname"]
+    
+    await message.answer(f"✅ Спасибо, {name} {surname}! Создаю сертификат...")
+    await generate_and_send_certificate(message, name, surname)
+    
+    user_states[user_id] = {"stage": "idle"}
+    del user_cert_data[user_id]
+
+async def generate_and_send_certificate(message: types.Message, name: str, surname: str):
+    template_path = "cert_template.jpeg"
+    
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import os
+        
+        # Проверяем, есть ли файл
+        if not os.path.exists(template_path):
+            await message.answer(
+                f"🎉 **Поздравляем, {name} {surname}!**\n\n"
+                f"✅ Вы успешно прошли тест!\n"
+                f"🏫 Ждём вас в ККРИТ!\n\n"
+                f"⚠️ Сертификат временно недоступен, но мы вас помним!",
+                reply_markup=menu_with_result
+            )
+            return
+        
+        # Открываем шаблон
+        img = Image.open(template_path)
+        draw = ImageDraw.Draw(img)
+        
+        # Загружаем шрифт
+        try:
+            font = ImageFont.truetype("arial.ttf", 60)
+        except:
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 60)
+            except:
+                font = ImageFont.load_default()
+        
+        # Получаем размеры картинки
+        width, height = img.size
+        
+        # Текст для вставки: Имя Фамилия
+        full_name = f"{name} {surname}"
+        
+        # Центрируем текст по горизонтали
+        try:
+            bbox = draw.textbbox((0, 0), full_name, font=font)
+            text_width = bbox[2] - bbox[0]
+            x = (width - text_width) // 2
+        except:
+            x = width // 3
+        
+        # Вертикальная позиция (под "ВРУЧАЕТСЯ")
+        y = height // 2 + 50
+        
+        # Вставляем имя и фамилию на сертификат
+        draw.text((x, y), full_name, fill="black", font=font)
+        
+        # Сохраняем
+        output_path = f"cert_{message.from_user.id}.jpeg"
+        img.save(output_path, "JPEG")
+        
+        # Отправляем
+        with open(output_path, "rb") as photo:
+            await message.answer_photo(
+                photo,
+                caption=f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы успешно прошли тест!\n🏫 Ждём вас в ККРИТ!",
+                reply_markup=menu_with_result
+            )
+        
+        # Удаляем временный файл
+        os.remove(output_path)
+        
+    except Exception as e:
+        await message.answer(
+            f"🎉 **Поздравляем, {name} {surname}!**\n\n"
+            f"✅ Вы успешно прошли тест!\n"
+            f"🏫 Ждём вас в ККРИТ!\n\n"
+            f"⚠️ Ошибка: {str(e)}",
+            reply_markup=menu_with_result
+        )
 # Система картинок по номеру
 image_urls = {
     1: "https://cdn.pixabay.com/photo/2016/11/23/14/45/coding-1853305_960_720.jpg",
