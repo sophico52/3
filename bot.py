@@ -4,19 +4,20 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 
-# ВСТАВЬ СВОЙ ТОКЕН:
 TOKEN = "8585699588:AAH-7I3sS-iqKNmgYQ4MwweGAXOkTuQwT-A"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+# Хранилища
 user_scores = {}
 user_results = {}
-user_states = {}  # Для отслеживания состояния пользователя
+user_states = {}
 user_cert_data = {}
 user_test_completed = {}
 
-# Главное меню
+# ========== МЕНЮ ==========
+
 menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📘 Что это за специальность")],
@@ -27,7 +28,6 @@ menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# Меню после теста
 menu_with_result = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📘 Что это за специальность")],
@@ -39,6 +39,8 @@ menu_with_result = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+# ========== ВОПРОСЫ ==========
 
 questions = [
     ("Ты нашел флешку в коридоре колледжа. Твои действия?", [
@@ -73,18 +75,17 @@ questions = [
     ])
 ]
 
-# Правильные ответы и баллы
-correct_answers = {
-    0: ("Отнесу преподавателю/потеряшку", 3),
-    1: ("Случайную фразу: Красный_чайник_скачет_в_19:43", 3),
-    2: ("Включи двухфакторную авторизацию", 3),
-    3: ("Чтобы показать, где дыра в защите", 3),
-    4: ("Может, вирус или майнер", 3),
-    5: ("Вижу все уязвимости с первого взгляда", 3)
+# Правильные ответы (для баллов)
+correct_dict = {
+    0: "Отнесу преподавателю потеряшку",
+    1: "Случайную фразу: Красный_чайник_скачет_в_19:43",
+    2: "Включи двухфакторную авторизацию",
+    3: "Чтобы показать, где дыра в защите",
+    4: "Может, вирус или майнер",
+    5: "Вижу все уязвимости с первого взгляда"
 }
 
 def get_result_text(score: int) -> str:
-    """Возвращает текст результата по количеству баллов"""
     if score <= 5:
         return "🫣 Пока не очень подходит. Присмотрись к другим специальностям колледжа!"
     elif score <= 10:
@@ -94,7 +95,7 @@ def get_result_text(score: int) -> str:
 
 # ========== ТЕСТ ==========
 
-@dp.message(lambda message: message.text == "Пройти тест")
+@dp.message(lambda message: message.text == "🧠 Пройти тест")
 async def start_test(message: types.Message):
     user_id = message.from_user.id
     user_scores[user_id] = 0
@@ -118,15 +119,16 @@ async def send_question(chat_id: int, user_id: int):
     await bot.send_message(chat_id, question_text, reply_markup=keyboard)
 
 @dp.message(lambda message: user_states.get(message.from_user.id, {}).get("stage") == "test")
-async def process_test_answer(message: types.Message):
-    user_id = message.from_user.id
+async def process_test_answer(message: types.Message):user_id = message.from_user.id
     state = user_states.get(user_id)
     if state is None or state.get("stage") != "test":
         return
+    
     index = state["question_index"]
     if index >= len(questions):
         await finish_test(message.chat.id, user_id)
         return
+    
     _, options = questions[index]
     if message.text not in options:
         await message.answer("Пожалуйста, выбери вариант из кнопок ниже.")
@@ -134,17 +136,8 @@ async def process_test_answer(message: types.Message):
     
     user_results[user_id].append(message.text)
     
-    # Подсчёт баллов
-    correct_answers = {
-        0: "Отнесу преподавателю потерпевшую",
-        1: "Случайную фразу: Красный чайник скачет в 19:43",
-        2: "Включи двухфакторную авторизацию",
-        3: "Чтобы показать, где дыра в защите",
-        4: "Может, вирус или майнер",
-        5: "Вижу все уязвимости с первого взгляда"
-    }
-    
-    if message.text == correct_answers[index]:
+    # Начисляем баллы за правильный ответ
+    if message.text == correct_dict[index]:
         user_scores[user_id] = user_scores.get(user_id, 0) + 3
     
     state["question_index"] += 1
@@ -156,13 +149,7 @@ async def process_test_answer(message: types.Message):
 async def finish_test(chat_id: int, user_id: int):
     user_test_completed[user_id] = True
     score = user_scores.get(user_id, 0)
-    
-    if score <= 5:
-        result_text = "🙈 Пока не очень подходит. Присмотрись к другим специальностям!"
-    elif score <= 10:
-        result_text = "👍 Стоит попробовать! У тебя есть задатки."
-    else:
-        result_text = "🔥 Отлично подходит! ОИБ — твоё направление!"
+    result_text = get_result_text(score)
     
     await bot.send_message(
         chat_id,
@@ -176,11 +163,11 @@ async def finish_test(chat_id: int, user_id: int):
 
 # ========== СЕРТИФИКАТ ==========
 
-@dp.message(lambda message: message.text == "Получить сертификат")
+@dp.message(lambda message: message.text == "🎓 Получить сертификат")
 async def start_certificate(message: types.Message):
     user_id = message.from_user.id
     if not user_test_completed.get(user_id, False):
-        await message.answer("❌ Сертификат только после теста! Нажми «Пройти тест»", reply_markup=menu)
+        await message.answer("❌ Сертификат только после теста! Нажми «🧠 Пройти тест»", reply_markup=menu)
         return
     
     user_cert_data[user_id] = {}
@@ -211,136 +198,52 @@ async def generate_and_send_certificate(message: types.Message, name: str, surna
     template_path = "cert_template.jpeg"
     
     try:
-        from PIL import Image, ImageDraw, ImageFont
-        import os
-        
-        # Проверяем, есть ли файл
         if not os.path.exists(template_path):
             await message.answer(
-                f"🎉 **Поздравляем, {name} {surname}!**\n\n"
-                f"✅ Вы успешно прошли тест!\n"
-                f"🏫 Ждём вас в ККРИТ!\n\n"
-                f"⚠️ Сертификат временно недоступен, но мы вас помним!",
+                f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
                 reply_markup=menu_with_result
             )
             return
         
-        # Открываем шаблон
+        from PIL import Image, ImageDraw, ImageFont
+        
         img = Image.open(template_path)
         draw = ImageDraw.Draw(img)
         
-        # Загружаем шрифт
         try:
             font = ImageFont.truetype("arial.ttf", 60)
         except:
-            try:
-                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 60)
-            except:
-                font = ImageFont.load_default()
+            font = ImageFont.load_default()
         
-        # Получаем размеры картинки
         width, height = img.size
-        
-        # Текст для вставки: Имя Фамилия
         full_name = f"{name} {surname}"
-        
-        # Центрируем текст по горизонтали
-        try:
-            bbox = draw.textbbox((0, 0), full_name, font=font)
-            text_width = bbox[2] - bbox[0]
-            x = (width - text_width) // 2
-        except:
-            x = width // 3
-        
-        # Вертикальная позиция (под "ВРУЧАЕТСЯ")
         y = height // 2 + 50
+        x = width // 3
         
-        # Вставляем имя и фамилию на сертификат
         draw.text((x, y), full_name, fill="black", font=font)
         
-        # Сохраняем
         output_path = f"cert_{message.from_user.id}.jpeg"
         img.save(output_path, "JPEG")
         
-        # Отправляем
         with open(output_path, "rb") as photo:
             await message.answer_photo(
                 photo,
-                caption=f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы успешно прошли тест!\n🏫 Ждём вас в ККРИТ!",
+                caption=f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
                 reply_markup=menu_with_result
-            )
-        
-        # Удаляем временный файл
-        os.remove(output_path)
+            )os.remove(output_path)
         
     except Exception as e:
         await message.answer(
-            f"🎉 **Поздравляем, {name} {surname}!**\n\n"
-            f"✅ Вы успешно прошли тест!\n"
-            f"🏫 Ждём вас в ККРИТ!\n\n"
-            f"⚠️ Ошибка: {str(e)}",
+            f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
             reply_markup=menu_with_result
         )
-# Система картинок по номеру
-image_urls = {
-    1: "https://cdn.pixabay.com/photo/2016/11/23/14/45/coding-1853305_960_720.jpg",
-    2: "https://cdn.pixabay.com/photo/2015/05/29/19/17/study-789631_1280.jpg",
-}
 
-image_section_map = {
-    "specialty": 1,
-    "job": 2,
-    "test": 3
-}
-
-
-def get_image_url(image_id: int) -> str:
-    return image_urls.get(image_id, image_urls[1])
-
-
-def get_image_id(section: str | int) -> int:
-    if isinstance(section, int):
-        return section if section in image_urls else 1
-    return image_section_map.get(section.lower(), 1)
-
-
-def get_image_id_from_url(url: str) -> int:
-    for image_id, image_url in image_urls.items():
-        if image_url == url:
-            return image_id
-    return 1
-
-
-async def answer_photo_safe(message: types.Message, photo: str, caption: str, reply_markup):
-    try:
-        await message.answer_photo(
-            photo=photo,
-            caption=caption,
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
-        return
-    except Exception:
-        fallback_photo = "https://picsum.photos/800/600"
-        try:
-            await message.answer_photo(
-                photo=fallback_photo,
-                caption=caption,
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-            return
-        except Exception:
-            pass
-
-    await message.answer(caption, reply_markup=reply_markup, parse_mode="Markdown")
-
+# ========== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ ==========
 
 @dp.message(Command("start"))
 async def start(message: types.Message):
     await message.answer(
-        "👋 Привет!\n"
-        "Я помогу тебе узнать о специальности\n"
+        "👋 Привет!\nЯ помогу тебе узнать о специальности\n"
         "«Основы информационной безопасности автоматизированных систем»\n\n"
         "🔐 Выбирай, что интересно 👇",
         reply_markup=menu
@@ -348,43 +251,34 @@ async def start(message: types.Message):
 
 @dp.message(lambda message: message.text == "📘 Что это за специальность")
 async def info(message: types.Message):
-    await answer_photo_safe(
-        message,
-        photo=get_image_url(get_image_id("specialty")),
-        caption=(
-            "🔐 **Основы информационной безопасности АС**\n\n"
-            "Ты научишься:\n"
-            "• Защищать сайты и базы данных\n"
-            "• Шифровать информацию\n"
-            "• Находить уязвимости\n"
-            "• Работать с криптографией\n\n"
-            "🔥 Одна из самых востребованных профессий!"
-        ),
+    await message.answer(
+        "🔐 **Основы информационной безопасности АС**\n\n"
+        "Ты научишься:\n"
+        "• Защищать сайты и базы данных\n"
+        "• Шифровать информацию\n"
+        "• Находить уязвимости\n"
+        "• Работать с криптографией\n\n"
+        "🔥 Одна из самых востребованных профессий!",
         reply_markup=menu
     )
 
 @dp.message(lambda message: message.text == "💼 Где работать")
 async def job(message: types.Message):
-    caption = (
+    await message.answer(
         "💼 **Где работать:**\n\n"
         "• Специалист по ИБ\n"
         "• Системный администратор\n"
         "• Аналитик безопасности\n"
         "• Этичный хакер\n"
         "• IT-специалист\n\n"
-        "💰 Зарплата: от 80 000 ₽"
-    )
-    await answer_photo_safe(
-        message,
-        photo=get_image_url(get_image_id("job")),
-        caption=caption,
+        "💰 Зарплата: от 80 000 ₽",
         reply_markup=menu
     )
 
 @dp.message(lambda message: message.text == "📚 Специальности колледжа")
 async def all_specialties(message: types.Message):
     text = (
-        "📚 Специальности нашего колледжа:\n\n"
+        "📚 **Специальности нашего колледжа:**\n\n"
         "🔐 Основы информационной безопасности АС\n"
         "🧑‍💻 Специалист по компьютерным системам\n"
         "🧑‍🏭 Монтаж и техническое обслуживание\n"
@@ -398,90 +292,24 @@ async def all_specialties(message: types.Message):
     )
     await message.answer(text, reply_markup=menu)
 
-@dp.message(lambda message: message.text == "🧠 Пройти тест")
-async def start_test(message: types.Message):
-    
-    user_id = message.from_user.id
-    user_scores[user_id] = 0
-    user_results[user_id] = []
-    user_states[user_id] = {"stage": "test", "question_index": 0}
-    await send_question(message.chat.id, user_id)
-
-async def send_question(chat_id: int, user_id: int):
-    state = user_states.get(user_id)
-    if state is None:
-        return
-    index = state["question_index"]
-    if index >= len(questions):
-        return
-    question_text, options = questions[index]
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=option)] for option in options] + [[KeyboardButton(text="В главное меню")]],
-        resize_keyboard=True
-    )
-    await bot.send_message(chat_id, question_text, reply_markup=keyboard)
-
-@dp.message(lambda message: user_states.get(message.from_user.id, {}).get("stage") == "test")
-async def process_test_answer(message: types.Message):
-    user_id = message.from_user.id
-    state = user_states.get(user_id)
-    if state is None:
-        return
-    selected = message.text
-    if selected in {"⏪ Главное меню", "В главное меню"}:
-        user_states[user_id] = {"stage": "idle"}
-        await message.answer("Ты вернулся в главное меню.", reply_markup=menu)
-        return
-
-    index = state["question_index"]
-    if index >= len(questions):
-        return
-    question_text, options = questions[index]
-    if selected not in options:
-        await message.answer("Пожалуйста, выбери вариант из клавиатуры.")
-        return
-
-    user_results[user_id].append(selected)
-    await message.answer(feedback)
-
-    state["question_index"] += 1
-    if state["question_index"] < len(questions):
-        await send_question(message.chat.id, user_id)
-    else:
-        score = user_scores.get(user_id, 0)
-        result_text = get_result_text(score)
-        await message.answer(
-            f"Тест завершён! Ты набрал {score} баллов.\n\n{result_text}",
-            reply_markup=menu_with_result
-        )
-        user_states[user_id] = {"stage": "idle"}
-
 @dp.message(lambda message: message.text == "📊 Мои результаты")
 async def show_results(message: types.Message):
     user_id = message.from_user.id
     if user_id not in user_scores:
-        await message.answer("Ты ещё не проходил тест. Нажми «🧠 Пройти тест».", reply_markup=menu)
+        await message.answer("Ты ещё не проходил тест. Нажми «🧠 Пройти тест»", reply_markup=menu)
         return
     score = user_scores[user_id]
     answers = user_results.get(user_id, [])
-    await message.answer(
-        f"Твой результат: {score} баллов.\nОтветы: {', '.join(answers)}",
-        reply_markup=menu_with_result
-    )
+    text = f"📊 **Твой результат: {score} баллов из 18**\n\n📋 **Ответы:**\n"
+    for i, ans in enumerate(answers, 1):
+        text += f"{i}. {ans}\n"
+    await message.answer(text, reply_markup=menu_with_result)
 
-@dp.message(lambda message: message.text in {"⏪ Главное меню", "В главное меню"})
-async def back_to_menu(message: types.Message):
-    user_id = message.from_user.id
-    user_states[user_id] = {"stage": "idle"}
-    await message.answer("Ты вернулся в главное меню.", reply_markup=menu)
+# ========== ЗАПУСК ==========
 
 async def main():
-    try:
-        await dp.start_polling(bot)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        await bot.session.close()
+    print("🤖 Бот запущен!")
+    await dp.start_polling(bot)
 
-if __name__ == "__main__":
+if name == "__main__":
     asyncio.run(main())
