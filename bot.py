@@ -1,6 +1,5 @@
 import asyncio
 import os
-from datetime import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
@@ -24,7 +23,6 @@ menu = ReplyKeyboardMarkup(
         [KeyboardButton(text="💼 Где работать")],
         [KeyboardButton(text="🧠 Пройти тест")],
         [KeyboardButton(text="📚 Специальности колледжа")]
-        [KeyboardButton(text="🎓 Получить сертификат")]
     ],
     resize_keyboard=True
 )
@@ -36,7 +34,8 @@ menu_with_result = ReplyKeyboardMarkup(
         [KeyboardButton(text="💼 Где работать")],
         [KeyboardButton(text="🧠 Пройти тест")],
         [KeyboardButton(text="📚 Специальности колледжа")],
-        [KeyboardButton(text="📊 Мои результаты")]
+        [KeyboardButton(text="📊 Мои результаты")],
+        [KeyboardButton(text="🎓 Получить сертификат")]
     ],
     resize_keyboard=True
 )
