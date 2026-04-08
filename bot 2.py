@@ -92,13 +92,11 @@ def get_result_text(score: int) -> str:
 image_urls = {
     1: "https://cdn.pixabay.com/photo/2016/11/23/14/45/coding-1853305_960_720.jpg",
     2: "https://cdn.pixabay.com/photo/2015/05/29/19/17/study-789631_1280.jpg",
-    3: "https://cdn.pixabay.com/photo/2019/03/08/16/20/monkey-4042658_1280.jpg"
 }
 
 image_section_map = {
     "specialty": 1,
-    "job": 2,
-    "test": 3
+    "job": 2
 }
 
 
