@@ -118,7 +118,14 @@ async def start(message: types.Message):
 async def info(message: types.Message):
     await answer_photo_safe(
         message,
-        photo=get_image_url(1),caption="🔐 Основы информационной безопасности АС\n\nТы научишься защищать данные и системы 🔥",
+        photo=get_image_url(1),caption=( "🔐 **Основы информационной безопасности АС**\n\n"
+            "Ты научишься:\n"
+            "• Защищать сайты и базы данных\n"
+            "• Шифровать информацию\n"
+            "• Находить уязвимости\n"
+            "• Работать с криптографией\n\n"
+            "🔥 Одна из самых востребованных профессий!"
+                                       ),
         reply_markup=menu
     )
 
@@ -128,14 +135,31 @@ async def job(message: types.Message):
     await answer_photo_safe(
         message,
         photo=get_image_url(2),
-        caption="💼 Специалист по ИБ, аналитик, админ и др.\n💰 от 80 000 ₽",
+        caption=( "💼 **Где работать:**\n\n"
+        "• Специалист по ИБ\n"
+        "• Системный администратор\n"
+        "• Аналитик безопасности\n"
+        "• Этичный хакер\n"
+        "• IT-специалист\n\n"
+        "💰 Зарплата: от 80 000 ₽"
+                ),
         reply_markup=menu
     )
 
 
 @dp.message(lambda message: message.text == "📚 Специальности колледжа")
 async def all_specialties(message: types.Message):
-    await message.answer("📚 Есть много IT и не только направлений!", reply_markup=menu)
+    await message.answer( "📚 Специальности нашего колледжа:\n\n"
+        "🔐 Основы информационной безопасности АС\n"
+        "🧑‍💻 Специалист по компьютерным системам\n"
+        "🧑‍🏭 Монтаж и техническое обслуживание\n"
+        "📒 Бухгалтер\n"
+        "🏦 Банковское дело\n"
+        "🎨 Веб-разработка\n"
+        "🎮 Разработчик компьютерных игр\n"
+        "🤖 Специалист по работе с ИИ\n"
+        "🚒 Пожарная безопасность\n\n"
+        "✨ Ждём тебя на дне открытых дверей!", reply_markup=menu)
 
 
 # 🔥 Показ картинки перед тестом
