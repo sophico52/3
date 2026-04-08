@@ -9,7 +9,6 @@ TOKEN = "8585699588:AAH-7I3sS-iqKNmgYQ4MwweGAXOkTuQwT-A"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Хранилища
 user_scores = {}
 user_results = {}
 user_states = {}
@@ -75,7 +74,6 @@ questions = [
     ])
 ]
 
-# Правильные ответы (для баллов)
 correct_dict = {
     0: "Отнесу преподавателю потеряшку",
     1: "Случайную фразу: Красный_чайник_скачет_в_19:43",
@@ -87,7 +85,7 @@ correct_dict = {
 
 def get_result_text(score: int) -> str:
     if score <= 5:
-        return "🫣 Пока не очень подходит. Присмотрись к другим специальностям колледжа!"
+        return "🫣 Пока не очень подходит. Присмотрись к другим специальностям!"
     elif score <= 10:
         return "👍 Стоит попробовать! У тебя есть задатки."
     else:
@@ -119,9 +117,9 @@ async def send_question(chat_id: int, user_id: int):
     await bot.send_message(chat_id, question_text, reply_markup=keyboard)
 
 @dp.message(lambda message: user_states.get(message.from_user.id, {}).get("stage") == "test")
-async def process_test_answer(message: types.Message):user_id = message.from_user.id
-    state = user_states.get(user_id)
-    if state is None or state.get("stage") != "test":
+async def process_test_answer(message: types.Message):
+    user_id = message.from_user.id
+    state = user_states.get(user_id)if state is None or state.get("stage") != "test":
         return
     
     index = state["question_index"]
@@ -136,7 +134,6 @@ async def process_test_answer(message: types.Message):user_id = message.from_use
     
     user_results[user_id].append(message.text)
     
-    # Начисляем баллы за правильный ответ
     if message.text == correct_dict[index]:
         user_scores[user_id] = user_scores.get(user_id, 0) + 3
     
@@ -230,11 +227,12 @@ async def generate_and_send_certificate(message: types.Message, name: str, surna
                 photo,
                 caption=f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
                 reply_markup=menu_with_result
-            )os.remove(output_path)
+            )
+        
+        os.remove(output_path)
         
     except Exception as e:
-        await message.answer(
-            f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
+        await message.answer(f"🎉 **Поздравляем, {name} {surname}!**\n\n✅ Вы прошли тест!\n🏫 Ждём вас в ККРИТ!",
             reply_markup=menu_with_result
         )
 
