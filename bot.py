@@ -4,7 +4,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 
 # ВСТАВЬ СВОЙ ТОКЕН:
-TOKEN = "8720318790:AAFVck6JCTWHibWmCGf0kcV473McJchKrMg"
+TOKEN = "8585699588:AAH-7I3sS-iqKNmgYQ4MwweGAXOkTuQwT-A"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
