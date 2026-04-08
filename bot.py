@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 
-TOKEN = "ТВОЙ_ТОКЕН"
+TOKEN = "8585699588:AAH-7I3sS-iqKNmgYQ4MwweGAXOkTuQwT-A"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
