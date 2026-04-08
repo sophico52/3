@@ -91,8 +91,8 @@ def get_result_text(score: int) -> str:
 # Система картинок по номеру
 image_urls = {
     1: "https://cdn.pixabay.com/photo/2016/11/23/14/45/coding-1853305_960_720.jpg",
-    2: "https://picsum.photos/id/1025/960/720",
-    3: "https://picsum.photos/id/1035/960/720"
+    2: "https://cdn.pixabay.com/photo/2015/05/29/19/17/study-789631_1280.jpg",
+    3: "https://cdn.pixabay.com/photo/2019/03/08/16/20/monkey-4042658_1280.jpg"
 }
 
 image_section_map = {
